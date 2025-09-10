@@ -1,7 +1,7 @@
 'use client';
 
 import { VStack, Heading, Text, Box, Spinner, Flex, Button } from '@chakra-ui/react';
-import useAuthGuard from '../../hooks/useAuthGuard';
+import useAuthGuard from '../../../hooks/useAuthGuard';
 
 export default function DashboardPage() {
   const { loading, user, isAuthenticated, logout } = useAuthGuard();
@@ -14,10 +14,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (!isAuthenticated) {
-    // Si non connecté, on ne rend rien (redirection automatique dans le hook)
-    return null;
-  }
+  if (!isAuthenticated) return null; // redirection automatique dans le hook
 
   return (
     <Box minH="100vh" bg="gray.50" p={6}>
@@ -34,7 +31,6 @@ export default function DashboardPage() {
           Ici s’afficheront vos rapports, photos et vidéos de chantier.
         </Text>
 
-        {/* ✅ Bouton de déconnexion */}
         <Button colorScheme="red" onClick={logout}>
           Déconnexion
         </Button>
