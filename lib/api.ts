@@ -40,7 +40,7 @@ export async function register(data: { email: string; password: string }) {
 
 export async function logout() {
   try {
-    await api.post('/auth/logout'); // optionnel si ton backend gère une route de logout
+    await api.post('/auth/logout'); // optionnel si backend gère /auth/logout
   } finally {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
