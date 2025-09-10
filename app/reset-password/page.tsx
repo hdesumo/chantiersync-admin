@@ -69,14 +69,14 @@ export default function ResetPasswordPage() {
 
       toast({
         title: 'Mot de passe réinitialisé',
-        description: 'Vous pouvez maintenant vous connecter.',
+        description: 'Vous allez être redirigé vers la page de confirmation.',
         status: 'success',
-        duration: 2500,
+        duration: 2000,
         isClosable: true,
       });
 
       setTimeout(() => {
-        router.push('/login');
+        router.push('/reset-password/success');
       }, 2000);
     } catch (error: any) {
       toast({
