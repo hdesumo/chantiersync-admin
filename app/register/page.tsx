@@ -4,14 +4,13 @@ import { useState } from 'react';
 import { Button, FormControl, FormLabel, Input, VStack, Text, useToast } from '@chakra-ui/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { register } from '../../lib/api';
+import { register } from '../../lib/api'; // ✅ Utilise notre nouvelle fonction centralisée
 import AuthLayout from '../../components/AuthLayout';
 
 export default function RegisterPage() {
   const toast = useToast();
   const router = useRouter();
 
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +18,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !email || !password) {
+    if (!email || !password) {
       toast({
         title: "Champs requis",
         description: "Tous les champs doivent être remplis",
@@ -33,17 +32,16 @@ export default function RegisterPage() {
     try {
       setLoading(true);
 
-      const response = await register({ name, email, password });
+      const response = await register({ email, password });
 
       toast({
         title: "Inscription réussie",
-        description: `Bienvenue ${name}, vous pouvez maintenant vous connecter`,
+        description: "Votre compte a été créé. Vous pouvez maintenant vous connecter.",
         status: "success",
         duration: 2500,
         isClosable: true,
       });
 
-      // Redirige vers la page de connexion après 2 secondes
       setTimeout(() => {
         router.push('/login');
       }, 2000);
@@ -65,16 +63,6 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit}>
         <VStack spacing={4}>
           <FormControl isRequired>
-            <FormLabel>Nom complet</FormLabel>
-            <Input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Votre nom"
-            />
-          </FormControl>
-
-          <FormControl isRequired>
             <FormLabel>Email</FormLabel>
             <Input
               type="email"
@@ -94,8 +82,9 @@ export default function RegisterPage() {
             />
           </FormControl>
 
+          {/* ✅ Correction de l'apostrophe avec &apos; */}
           <Button type="submit" colorScheme="blue" w="full" isLoading={loading} loadingText="Création...">
-            S'inscrire
+            S&apos;inscrire
           </Button>
         </VStack>
       </form>

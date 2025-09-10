@@ -1,31 +1,12 @@
 'use client';
 
 import { Flex, Heading, Spacer, Avatar, Menu, MenuButton, MenuList, MenuItem, HStack } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { logout } from '../lib/api';
+import useAuthGuard from '../hooks/useAuthGuard';
 
 export default function Header() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('authUser');
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch {
-          setUser(null);
-        }
-      }
-    }
-  }, []);
-
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
-  };
+  const { user, logout } = useAuthGuard();
 
   return (
     <Flex
@@ -39,7 +20,13 @@ export default function Header() {
       borderColor="gray.200"
     >
       {/* Logo ou titre de l'application */}
-      <Heading as="h1" size="md" color="brand.500" cursor="pointer" onClick={() => router.push('/dashboard')}>
+      <Heading
+        as="h1"
+        size="md"
+        color="brand.500"
+        cursor="pointer"
+        onClick={() => router.push('/dashboard')}
+      >
         ChantierSync
       </Heading>
 
@@ -49,12 +36,12 @@ export default function Header() {
       <Menu>
         <MenuButton>
           <HStack spacing={2}>
-            <Avatar size="sm" name={user?.name || 'Utilisateur'} src={user?.avatar || undefined} />
+            <Avatar size="sm" name={user?.name || user?.email || 'Utilisateur'} />
           </HStack>
         </MenuButton>
         <MenuList>
           <MenuItem onClick={() => router.push('/profile')}>Mon Profil</MenuItem>
-          <MenuItem onClick={handleLogout} color="red">
+          <MenuItem onClick={logout} color="red">
             Déconnexion
           </MenuItem>
         </MenuList>

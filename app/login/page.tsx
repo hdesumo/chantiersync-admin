@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { Button, FormControl, FormLabel, Input, VStack, Text, useToast } from '@chakra-ui/react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { VStack, Input, Button, useToast, Heading } from '@chakra-ui/react';
 import { login } from '../../lib/api';
+import AuthLayout from '../../components/AuthLayout';
 
 export default function LoginPage() {
-  const router = useRouter();
   const toast = useToast();
+  const router = useRouter();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,33 +17,44 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+
+    if (!email || !password) {
+      toast({
+        title: 'Champs requis',
+        description: 'Veuillez renseigner votre email et votre mot de passe',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
 
     try {
-      const res = await login({ email, password });
+      setLoading(true);
 
-      // Vérifie la structure de la réponse API
-      if (!res.data?.token) {
-        throw new Error('Réponse API invalide');
+      const response = await login({ email, password });
+
+      // ✅ Stocke le token dans localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', response.token);
       }
-
-      // Stocke le token et les infos utilisateur
-      localStorage.setItem('authToken', res.data.token);
-      localStorage.setItem('authUser', JSON.stringify(res.data.user));
 
       toast({
         title: 'Connexion réussie',
-        description: `Bienvenue, ${res.data.user?.name || 'Utilisateur'}`,
+        description: `Bienvenue ${response.user?.email || ''}`,
         status: 'success',
         duration: 2500,
         isClosable: true,
       });
 
-      router.push('/dashboard');
-    } catch (err: any) {
+      // ✅ Redirection vers le tableau de bord après connexion
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 1500);
+    } catch (error: any) {
       toast({
         title: 'Erreur de connexion',
-        description: err.response?.data?.message || 'Identifiants invalides',
+        description: error.response?.data?.message || 'Identifiants invalides',
         status: 'error',
         duration: 4000,
         isClosable: true,
@@ -52,43 +65,42 @@ export default function LoginPage() {
   };
 
   return (
-    <VStack
-      as="form"
-      onSubmit={handleSubmit}
-      spacing={4}
-      p={6}
-      maxW="sm"
-      mx="auto"
-      mt={20}
-      bg="white"
-      rounded="lg"
-      shadow="md"
-    >
-      <Heading size="md" color="brand.500">
-        Connexion
-      </Heading>
-      <Input
-        placeholder="Email"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <Input
-        placeholder="Mot de passe"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <Button
-        type="submit"
-        colorScheme="blue"
-        w="full"
-        isLoading={loading}
-      >
-        Se connecter
-      </Button>
-    </VStack>
+    <AuthLayout title="Connexion" subtitle="Accédez à votre espace administrateur">
+      <form onSubmit={handleSubmit}>
+        <VStack spacing={4}>
+          <FormControl isRequired>
+            <FormLabel>Email</FormLabel>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Votre email"
+            />
+          </FormControl>
+
+          <FormControl isRequired>
+            <FormLabel>Mot de passe</FormLabel>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Votre mot de passe"
+            />
+          </FormControl>
+
+          {/* ✅ Apostrophe échappée */}
+          <Button type="submit" colorScheme="blue" w="full" isLoading={loading} loadingText="Connexion...">
+            Se&nbsp;connecter
+          </Button>
+        </VStack>
+      </form>
+
+      <Text fontSize="sm" color="gray.500" textAlign="center" mt={4}>
+        Pas de compte ?{' '}
+        <Link href="/register" style={{ color: '#2563eb', textDecoration: 'underline' }}>
+          Créez-en un ici
+        </Link>
+      </Text>
+    </AuthLayout>
   );
 }

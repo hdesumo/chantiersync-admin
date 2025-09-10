@@ -2,30 +2,54 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser } from '../lib/api';
+import { getProfile } from '../lib/api';
 
 export default function useAuthGuard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // ✅ Déconnexion propre (token + redirection)
+  const logout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+    }
+    setUser(null);
+    setIsAuthenticated(false);
+    router.push('/login');
+  };
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
     if (!token) {
+      // Pas de token → redirection login immédiate
       router.push('/login');
+      setLoading(false);
       return;
     }
 
-    getCurrentUser()
-      .then((res) => setUser(res.data))
-      .catch(() => {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('authUser');
-        router.push('/login');
-      })
-      .finally(() => setLoading(false));
+    async function fetchUser() {
+      try {
+        const data = await getProfile();
+        setUser(data);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('⚠️ Erreur récupération profil:', error);
+        logout(); // Token invalide → supprime et redirige
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUser();
   }, [router]);
 
-  return { loading, user };
+  return {
+    loading,
+    user,
+    isAuthenticated,
+    logout,
+  };
 }

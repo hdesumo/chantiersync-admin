@@ -1,15 +1,14 @@
 'use client';
 
 import { Button, useToast } from '@chakra-ui/react';
-import { useRouter } from 'next/navigation';
-import { logout } from '../lib/api';
+import useAuthGuard from '../hooks/useAuthGuard';
 
 export default function LogoutButton() {
   const toast = useToast();
-  const router = useRouter();
+  const { logout } = useAuthGuard();
 
   const handleLogout = () => {
-    logout();
+    logout(); // ✅ utilise le hook, supprime le token et redirige
 
     toast({
       title: "Déconnexion réussie",
@@ -18,8 +17,6 @@ export default function LogoutButton() {
       duration: 2500,
       isClosable: true,
     });
-
-    router.push('/login');
   };
 
   return (
