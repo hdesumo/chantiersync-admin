@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// ✅ Création d'une instance Axios avec l'URL de base
+// ✅ Instance Axios avec URL de base dynamique
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: {
@@ -8,11 +8,13 @@ const api = axios.create({
   },
 });
 
-// ✅ Intercepteur pour ajouter le token JWT automatiquement (si présent)
+// ✅ Ajout automatique du token si présent
 api.interceptors.request.use((config) => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });
@@ -37,9 +39,8 @@ export async function register(data: { email: string; password: string }) {
 }
 
 export async function logout() {
-  // Côté backend : si tu as une route /auth/logout
   try {
-    await api.post('/auth/logout');
+    await api.post('/auth/logout'); // optionnel si ton backend gère une route de logout
   } finally {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
@@ -48,7 +49,21 @@ export async function logout() {
 }
 
 // ---------------------------
-// 📌 Healthcheck et Ping
+// 📌 Mot de passe oublié / réinitialisation
+// ---------------------------
+
+export async function forgotPassword(data: { email: string }) {
+  const res = await api.post('/auth/forgot-password', data);
+  return res.data;
+}
+
+export async function resetPassword(data: { token: string; newPassword: string }) {
+  const res = await api.post('/auth/reset-password', data);
+  return res.data;
+}
+
+// ---------------------------
+// 📌 Healthcheck & Ping
 // ---------------------------
 
 export async function healthz() {
@@ -62,7 +77,7 @@ export async function ping() {
 }
 
 // ---------------------------
-// 📌 Exemple : protected resource
+// 📌 Récupération profil
 // ---------------------------
 
 export async function getProfile() {
