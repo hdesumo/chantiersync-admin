@@ -1,38 +1,94 @@
 'use client';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { VStack, Input, Button, useToast, Heading } from '@chakra-ui/react';
+import { login } from '../../lib/api';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const toast = useToast();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const r = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  const submit = (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    r.push('/dashboard');
+    setLoading(true);
+
+    try {
+      const res = await login({ email, password });
+
+      // Vérifie la structure de la réponse API
+      if (!res.data?.token) {
+        throw new Error('Réponse API invalide');
+      }
+
+      // Stocke le token et les infos utilisateur
+      localStorage.setItem('authToken', res.data.token);
+      localStorage.setItem('authUser', JSON.stringify(res.data.user));
+
+      toast({
+        title: 'Connexion réussie',
+        description: `Bienvenue, ${res.data.user?.name || 'Utilisateur'}`,
+        status: 'success',
+        duration: 2500,
+        isClosable: true,
+      });
+
+      router.push('/dashboard');
+    } catch (err: any) {
+      toast({
+        title: 'Erreur de connexion',
+        description: err.response?.data?.message || 'Identifiants invalides',
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <main style={{ padding: 24, maxWidth: 360 }}>
-      <h2>Connexion</h2>
-      <form onSubmit={submit}>
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ width: '100%', marginTop: 8, padding: 8 }}
-        />
-        <input
-          type="password"
-          placeholder="Mot de passe"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ width: '100%', marginTop: 8, padding: 8 }}
-        />
-        <button type="submit" style={{ marginTop: 12 }}>
-          Se connecter
-        </button>
-      </form>
-    </main>
+    <VStack
+      as="form"
+      onSubmit={handleSubmit}
+      spacing={4}
+      p={6}
+      maxW="sm"
+      mx="auto"
+      mt={20}
+      bg="white"
+      rounded="lg"
+      shadow="md"
+    >
+      <Heading size="md" color="brand.500">
+        Connexion
+      </Heading>
+      <Input
+        placeholder="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <Input
+        placeholder="Mot de passe"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      <Button
+        type="submit"
+        colorScheme="blue"
+        w="full"
+        isLoading={loading}
+      >
+        Se connecter
+      </Button>
+    </VStack>
   );
 }
