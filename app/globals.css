@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  @apply min-h-screen bg-gray-50 text-gray-900;
+/* Import optionnel si tu veux Inter en local :
+   npm install @fontsource/inter
+   puis décommente les lignes ci-dessous :
+*/
+/*@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/700.css";*/
+
+/* Styles globaux */
+@layer base {
+  html {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white;
+  }
 }

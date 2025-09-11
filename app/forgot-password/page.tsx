@@ -1,79 +1,69 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, FormControl, FormLabel, Input, VStack, Text, useToast } from '@chakra-ui/react';
-import Link from 'next/link';
-import { forgotPassword } from '../../lib/api';
-import AuthLayout from '../../components/AuthLayout';
+import { sendResetLink } from '../../lib/api';
 
 export default function ForgotPasswordPage() {
-  const toast = useToast();
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    if (!email) {
-      toast({
-        title: "Email requis",
-        description: "Veuillez entrer votre adresse email",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
-    }
+    setError('');
+    setSuccess('');
 
     try {
-      setLoading(true);
-      const response = await forgotPassword({ email });
-
-      toast({
-        title: "Lien envoyé",
-        description: response.data?.message || `Vérifiez votre boîte mail (${email}) pour réinitialiser votre mot de passe`,
-        status: "info",
-        duration: 4000,
-        isClosable: true,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erreur",
-        description: error.response?.data?.message || "Impossible d'envoyer le lien",
-        status: "error",
-        duration: 4000,
-        isClosable: true,
-      });
-    } finally {
-      setLoading(false);
+      const response = await sendResetLink({ email });
+      if (response?.success) {
+        setSuccess('Un lien de réinitialisation vous a été envoyé.');
+      } else {
+        setError(response?.message || 'Erreur. Réessayez.');
+      }
+    } catch (err) {
+      setError('Erreur réseau.');
     }
-  };
+  }
 
   return (
-    <AuthLayout title="Mot de passe oublié" subtitle="Entrez votre email pour recevoir un lien de réinitialisation">
-      <form onSubmit={handleSubmit}>
-        <VStack spacing={4}>
-          <FormControl isRequired>
-            <FormLabel>Email</FormLabel>
-            <Input
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow p-8">
+        <h1 className="text-2xl font-bold text-center text-indigo-600 dark:text-indigo-400 mb-6">
+          Mot de passe oublié
+        </h1>
+
+        {success && (
+          <div className="mb-4 text-sm text-green-600 bg-green-100 dark:bg-green-900/50 p-3 rounded-lg">
+            {success}
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-4 text-sm text-red-600 bg-red-100 dark:bg-red-900/50 p-3 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Votre email"
+              required
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-          </FormControl>
+          </div>
 
-          <Button type="submit" colorScheme="blue" w="full" isLoading={loading} loadingText="Envoi...">
+          <button
+            type="submit"
+            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition"
+          >
             Envoyer le lien
-          </Button>
-        </VStack>
-      </form>
-
-      <Text fontSize="sm" color="gray.500" textAlign="center" mt={4}>
-        <Link href="/login" style={{ color: '#2563eb', textDecoration: 'underline' }}>
-          Retour à la connexion
-        </Link>
-      </Text>
-    </AuthLayout>
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }

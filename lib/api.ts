@@ -1,88 +1,52 @@
-import axios from 'axios';
+import axios from "axios";
 
-// ✅ Instance Axios avec URL de base dynamique
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { "Content-Type": "application/json" },
 });
 
-// ✅ Ajout automatique du token si présent
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
-// ---------------------------
-// 📌 Authentification
-// ---------------------------
-
+// 🔐 Authentification
 export async function login(credentials: { email: string; password: string }) {
-  const res = await api.post('/auth/login', credentials);
-  return res.data;
-}
-
-export async function loginWithPin(credentials: { full_mobile: string; pin: string }) {
-  const res = await api.post('/auth/login', credentials);
-  return res.data;
+  const response = await api.post("/login", credentials);
+  return response.data;
 }
 
 export async function register(data: { email: string; password: string }) {
-  const res = await api.post('/auth/register', data);
-  return res.data;
+  const response = await api.post("/register", data);
+  return response.data;
 }
 
 export async function logout() {
   try {
-    await api.post('/auth/logout'); // optionnel si backend gère /auth/logout
-  } finally {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-    }
+    await api.post("/logout");
+    localStorage.removeItem("token");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erreur logout:", error.response?.data || error.message);
+    return { success: false };
   }
 }
 
-// ---------------------------
-// 📌 Mot de passe oublié / réinitialisation
-// ---------------------------
-
-export async function forgotPassword(data: { email: string }) {
-  const res = await api.post('/auth/forgot-password', data);
-  return res.data;
+// 🔑 Réinitialisation de mot de passe
+export async function sendResetLink(data: { email: string }) {
+  try {
+    const response = await api.post("/auth/forgot-password", data);
+    return response.data;
+  } catch (error: any) {
+    console.error("Erreur sendResetLink:", error.response?.data || error.message);
+    return { success: false, message: "Erreur lors de l'envoi du lien." };
+  }
 }
 
-export async function resetPassword(data: { token: string; newPassword: string }) {
-  const res = await api.post('/auth/reset-password', data);
-  return res.data;
-}
-
-// ---------------------------
-// 📌 Healthcheck & Ping
-// ---------------------------
-
-export async function healthz() {
-  const res = await api.get('/healthz');
-  return res.data;
-}
-
-export async function ping() {
-  const res = await api.get('/ping');
-  return res.data;
-}
-
-// ---------------------------
-// 📌 Récupération profil
-// ---------------------------
-
+// 👤 Profil utilisateur
 export async function getProfile() {
-  const res = await api.get('/user/profile');
-  return res.data;
+  try {
+    const response = await api.get("/profile");
+    return response.data;
+  } catch (error: any) {
+    console.error("Erreur getProfile:", error.response?.data || error.message);
+    return null;
+  }
 }
 
 export default api;

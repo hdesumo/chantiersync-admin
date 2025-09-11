@@ -1,60 +1,38 @@
 'use client';
 
-import { VStack, Heading, Text, Box, Spinner, Flex, Button } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
-import { getProfile } from '../../../lib/api';
-import useAuthGuard from '../../../hooks/useAuthGuard';
+import { useState, useEffect } from 'react';
 
 export default function ProfilePage() {
-  const { loading, isAuthenticated, logout } = useAuthGuard();
-  const [profile, setProfile] = useState<any>(null);
-  const [fetching, setFetching] = useState(true);
+  const [user, setUser] = useState<{ email: string } | null>(null);
 
   useEffect(() => {
-    async function fetchUser() {
-      try {
-        const data = await getProfile();
-        setProfile(data);
-      } catch (error) {
-        console.error('Erreur chargement profil:', error);
-      } finally {
-        setFetching(false);
-      }
-    }
-
-    fetchUser();
+    // Exemple : récupérer le profil via l'API
+    setUser({ email: 'utilisateur@example.com' });
   }, []);
 
-  if (loading || fetching) {
+  if (!user) {
     return (
-      <Flex minH="100vh" align="center" justify="center">
-        <Spinner size="xl" />
-      </Flex>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="animate-pulse text-gray-600 dark:text-gray-300">
+          Chargement...
+        </span>
+      </div>
     );
   }
 
-  if (!isAuthenticated) return null;
-
   return (
-    <Box minH="100vh" bg="gray.50" p={6}>
-      <VStack spacing={6} align="stretch" maxW="lg" mx="auto">
-        <Heading size="lg" color="brand.500">
-          Mon profil
-        </Heading>
-
-        {profile ? (
-          <>
-            <Text>Email : {profile.email}</Text>
-            <Text>ID utilisateur : {profile.id}</Text>
-          </>
-        ) : (
-          <Text color="gray.500">Impossible de charger les informations du profil.</Text>
-        )}
-
-        <Button colorScheme="red" onClick={logout}>
-          Déconnexion
-        </Button>
-      </VStack>
-    </Box>
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-6">
+        Mon profil
+      </h1>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-6">
+        <p className="mb-4">
+          <strong>Email :</strong> {user.email}
+        </p>
+        <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+          Modifier le profil
+        </button>
+      </div>
+    </div>
   );
 }

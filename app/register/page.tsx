@@ -1,100 +1,105 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, FormControl, FormLabel, Input, VStack, Text, useToast } from '@chakra-ui/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { register } from '../../lib/api'; // ✅ Utilise notre nouvelle fonction centralisée
-import AuthLayout from '../../components/AuthLayout';
+import { register } from '../../lib/api';
 
 export default function RegisterPage() {
-  const toast = useToast();
   const router = useRouter();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError('');
 
-    if (!email || !password) {
-      toast({
-        title: "Champs requis",
-        description: "Tous les champs doivent être remplis",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+    if (password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas.');
       return;
     }
 
+    setLoading(true);
     try {
-      setLoading(true);
-
       const response = await register({ email, password });
-
-      toast({
-        title: "Inscription réussie",
-        description: "Votre compte a été créé. Vous pouvez maintenant vous connecter.",
-        status: "success",
-        duration: 2500,
-        isClosable: true,
-      });
-
-      setTimeout(() => {
+      if (response?.success) {
         router.push('/login');
-      }, 2000);
-    } catch (error: any) {
-      toast({
-        title: "Erreur d'inscription",
-        description: error.response?.data?.message || "Impossible de créer le compte",
-        status: "error",
-        duration: 4000,
-        isClosable: true,
-      });
+      } else {
+        setError(response?.message || 'Erreur lors de l’inscription.');
+      }
+    } catch (err) {
+      setError('Impossible de créer le compte. Réessayez.');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <AuthLayout title="Inscription" subtitle="Créez votre compte pour suivre vos chantiers">
-      <form onSubmit={handleSubmit}>
-        <VStack spacing={4}>
-          <FormControl isRequired>
-            <FormLabel>Email</FormLabel>
-            <Input
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow p-8">
+        <h1 className="text-2xl font-bold text-center text-indigo-600 dark:text-indigo-400 mb-6">
+          Créer un compte
+        </h1>
+
+        {error && (
+          <div className="mb-4 text-sm text-red-600 bg-red-100 dark:bg-red-900/50 p-3 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Votre email"
+              required
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-          </FormControl>
+          </div>
 
-          <FormControl isRequired>
-            <FormLabel>Mot de passe</FormLabel>
-            <Input
+          <div>
+            <label className="block text-sm font-medium mb-1">Mot de passe</label>
+            <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Votre mot de passe"
+              required
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-          </FormControl>
+          </div>
 
-          {/* ✅ Correction de l'apostrophe avec &apos; */}
-          <Button type="submit" colorScheme="blue" w="full" isLoading={loading} loadingText="Création...">
-            S&apos;inscrire
-          </Button>
-        </VStack>
-      </form>
+          <div>
+            <label className="block text-sm font-medium mb-1">Confirmer le mot de passe</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
 
-      <Text fontSize="sm" color="gray.500" textAlign="center" mt={4}>
-        Déjà un compte ?{' '}
-        <Link href="/login" style={{ color: '#2563eb', textDecoration: 'underline' }}>
-          Connectez-vous ici
-        </Link>
-      </Text>
-    </AuthLayout>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
+          >
+            {loading ? 'Création...' : 'Créer mon compte'}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+          Déjà inscrit ?{' '}
+          <Link href="/login" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+            Se connecter
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 }

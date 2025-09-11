@@ -1,32 +1,24 @@
 'use client';
 
-import { VStack, Heading, Text, Button, Box } from '@chakra-ui/react';
-import { useRouter } from 'next/navigation';
-import AuthLayout from '../../../components/AuthLayout';
+import Link from 'next/link';
 
 export default function ResetPasswordSuccessPage() {
-  const router = useRouter();
-
   return (
-    <AuthLayout
-      title="Mot de passe réinitialisé"
-      subtitle="Votre mot de passe a été mis à jour avec succès."
-    >
-      <VStack spacing={6}>
-        <Box textAlign="center">
-          <Text fontSize="md" color="green.600">
-            Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.
-          </Text>
-        </Box>
-
-        <Button
-          colorScheme="blue"
-          w="full"
-          onClick={() => router.push('/login')}
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center">
+        <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">
+          Réinitialisation réussie
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
+          Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.
+        </p>
+        <Link
+          href="/login"
+          className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
         >
-          Aller à la connexion
-        </Button>
-      </VStack>
-    </AuthLayout>
+          Retour à la connexion
+        </Link>
+      </div>
+    </div>
   );
 }

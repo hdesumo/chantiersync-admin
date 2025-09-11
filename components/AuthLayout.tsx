@@ -1,7 +1,5 @@
 'use client';
 
-import { Box, Heading, Text } from '@chakra-ui/react';
-
 export default function AuthLayout({
   title,
   subtitle,
@@ -12,25 +10,18 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Box
-      minH="100vh"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bg="gray.50"
-      px={4}
-    >
-      <Box w="full" maxW="sm" bg="white" p={6} rounded="lg" shadow="md">
-        <Heading as="h1" size="lg" textAlign="center" color="brand.500" mb={2}>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow p-8">
+        <h1 className="text-2xl font-bold text-center text-indigo-600 dark:text-indigo-400 mb-2">
           {title}
-        </Heading>
+        </h1>
         {subtitle && (
-          <Text fontSize="sm" textAlign="center" color="gray.600" mb={4}>
+          <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
             {subtitle}
-          </Text>
+          </p>
         )}
-        {children}
-      </Box>
-    </Box>
+        <div>{children}</div>
+      </div>
+    </div>
   );
 }

@@ -1,106 +1,89 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, FormControl, FormLabel, Input, VStack, Text, useToast } from '@chakra-ui/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { login } from '../../lib/api';
-import AuthLayout from '../../components/AuthLayout';
 
 export default function LoginPage() {
-  const toast = useToast();
   const router = useRouter();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    if (!email || !password) {
-      toast({
-        title: 'Champs requis',
-        description: 'Veuillez renseigner votre email et votre mot de passe',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
-    }
+    setLoading(true);
+    setError('');
 
     try {
-      setLoading(true);
-
       const response = await login({ email, password });
-
-      // ✅ Stocke le token dans localStorage
-      if (typeof window !== 'undefined') {
+      if (response?.token) {
         localStorage.setItem('token', response.token);
-      }
-
-      toast({
-        title: 'Connexion réussie',
-        description: `Bienvenue ${response.user?.email || ''}`,
-        status: 'success',
-        duration: 2500,
-        isClosable: true,
-      });
-
-      // ✅ Redirection vers le tableau de bord après connexion
-      setTimeout(() => {
         router.push('/dashboard');
-      }, 1500);
-    } catch (error: any) {
-      toast({
-        title: 'Erreur de connexion',
-        description: error.response?.data?.message || 'Identifiants invalides',
-        status: 'error',
-        duration: 4000,
-        isClosable: true,
-      });
+      } else {
+        setError('Identifiants incorrects.');
+      }
+    } catch (err) {
+      setError('Erreur de connexion. Réessayez.');
     } finally {
       setLoading(false);
     }
-  };
+  } // <== bien fermé ici, pas de point-virgule !
 
   return (
-    <AuthLayout title="Connexion" subtitle="Accédez à votre espace administrateur">
-      <form onSubmit={handleSubmit}>
-        <VStack spacing={4}>
-          <FormControl isRequired>
-            <FormLabel>Email</FormLabel>
-            <Input
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow p-8">
+        <h1 className="text-2xl font-bold text-center text-indigo-600 dark:text-indigo-400 mb-6">
+          Connexion
+        </h1>
+
+        {error && (
+          <div className="mb-4 text-sm text-red-600 bg-red-100 dark:bg-red-900/50 p-3 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Votre email"
+              required
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-          </FormControl>
+          </div>
 
-          <FormControl isRequired>
-            <FormLabel>Mot de passe</FormLabel>
-            <Input
+          <div>
+            <label className="block text-sm font-medium mb-1">Mot de passe</label>
+            <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Votre mot de passe"
+              required
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-          </FormControl>
+          </div>
 
-          {/* ✅ Apostrophe échappée */}
-          <Button type="submit" colorScheme="blue" w="full" isLoading={loading} loadingText="Connexion...">
-            Se&nbsp;connecter
-          </Button>
-        </VStack>
-      </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
+          >
+            {loading ? 'Connexion...' : 'Se connecter'}
+          </button>
+        </form>
 
-      <Text fontSize="sm" color="gray.500" textAlign="center" mt={4}>
-        Pas de compte ?{' '}
-        <Link href="/register" style={{ color: '#2563eb', textDecoration: 'underline' }}>
-          Créez-en un ici
-        </Link>
-      </Text>
-    </AuthLayout>
+        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+          Pas encore de compte ?{' '}
+          <Link href="/register" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+            S’inscrire
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 }
