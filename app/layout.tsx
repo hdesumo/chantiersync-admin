@@ -1,21 +1,20 @@
-'use client';
+// app/layout.tsx
+"use client";
 
-import { ChakraProvider } from '@chakra-ui/react';
-import theme from './theme';
-import './globals.css';
-import Header from '../components/Header';
-import { usePathname } from 'next/navigation';
+import { ReactNode } from "react";
+import { ChakraProvider, createStandaloneToast } from "@chakra-ui/react";
+import theme from "@/app/theme"; // ✅ Import absolu pour éviter les erreurs de chemin
+import "./globals.css";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isPublicPage = ['/login', '/register', '/forgot-password'].includes(pathname);
+const { ToastContainer } = createStandaloneToast();
 
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="en">
       <body>
         <ChakraProvider theme={theme}>
-          {!isPublicPage && <Header />}
           {children}
+          <ToastContainer />
         </ChakraProvider>
       </body>
     </html>
