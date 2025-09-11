@@ -1,9 +1,8 @@
-// app/layout.tsx
 "use client";
 
 import { ReactNode } from "react";
 import { ChakraProvider, createStandaloneToast } from "@chakra-ui/react";
-import theme from "@/app/theme"; // ✅ Import absolu pour éviter les erreurs de chemin
+import theme from "@/theme"; // ✅ corrigé : plus de /app dans le chemin
 import "./globals.css";
 
 const { ToastContainer } = createStandaloneToast();
